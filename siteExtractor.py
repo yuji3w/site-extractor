@@ -59,7 +59,7 @@ def main(args):
 		parseText(inputText, args["output"])
 	else:
 		for outputurl in returnInfo(inputText):
-				print(outputurl + "\n")
+				print(outputurl)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
