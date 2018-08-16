@@ -1,3 +1,4 @@
+import importlib
 from splinter import Browser
 password2 = 'fakepassword'
 browser2 = Browser()
