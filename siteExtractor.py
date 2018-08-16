@@ -1,5 +1,4 @@
 import httplib2
-import importlib
 from bs4 import BeautifulSoup, SoupStrainer
 from pprint import pprint
 import argparse
@@ -19,6 +18,7 @@ def returnInfo(url):
 	        if args["find"] in link["href"]:
 	        	infoList.append(link["href"])
 
+	#remove all args in future
 	if args["separator"]:
 		urlList = infoList
 		infoList = []
@@ -29,27 +29,39 @@ def returnInfo(url):
 
 	return infoList
 
+def toList(inputText):
+	urlList = []
+	if not validators.url(inputText):
+		inputDir = inputText
+		inputText = open(inputText,"r")
+		inputText = inputText.read().splitlines()
+		for inputurl in inputText:
+			urlList.append(inputurl)
+	else:
+		urlList.append(inputText)
+	return urlList
+
+def parseText(inputText, outputText):
+	inputDir = inputText
+	inputText = open(inputText,"r")
+	inputText = inputText.read().splitlines()
+	outputText = open(outputText,"w+") if outputText else open(
+		os.path.join(os.path.dirname(inputDir),"outputInfo.txt"),"w+")
+	for inputurl in inputText:
+		for outputurl in returnInfo(inputurl):
+			outputText.write(outputurl + "\n")
+		outputText.write("\n\n")
 
 def main(args):
 
 	inputText = args["input"]
 	if not validators.url(inputText):
-		inputText = open(inputText,"r")
-		inputText = inputText.read().splitlines()
-		outputText = open(args["output"],"w+") if args["output"] else open(
-			os.path.join(os.path.dirname(args["input"]),"outputInfo.txt"),"w+")
-
-	if not validators.url(inputText):
-		for inputurl in inputText:
-			for outputurl in returnInfo(inputurl):
-				outputText.write(outputurl + "\n")
-			outputText.write("\n\n")
+		parseText(inputText, args["output"])
 	else:
 		for outputurl in returnInfo(inputText):
 				print(outputurl + "\n")
 
 if __name__ == '__main__':
-
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i", "--input", required=True, help="Input list of urls in text file or url.")
 	parser.add_argument("-o", "--output", required=False, help="""Outputs list of urls 
