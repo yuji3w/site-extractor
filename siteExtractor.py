@@ -5,9 +5,76 @@ import argparse
 import operator
 import os
 import validators
+import re
 
 
-def returnInfo(url):
+
+def returnInfo(url, find, seperator = False):
+	http = httplib2.Http()
+	status, response = http.request(url)
+
+	infoList = []
+
+	for link in BeautifulSoup(response, parse_only=SoupStrainer("a"), features="html.parser"):
+	    if link.has_attr("href"):
+	        if find in link["href"]:
+	        	infoList.append(link["href"])
+
+	#remove all args in future
+	if seperator:
+		urlList = infoList
+		infoList = []
+		for link in urlList:
+			if seperator in link:
+				head, sep, tail = link.partition(seperator)
+				infoList.append(tail)
+
+	if not infoList:
+		#if it's empty
+		print("It's empty.")
+		print(response)
+
+	return infoList
+
+
+def returnImg(url):
+	#For images
+	http = httplib2.Http()
+	status, response = http.request(url)
+
+	infoList = []
+
+	for link in BeautifulSoup(response, parse_only=SoupStrainer("img"), features="html.parser"):
+		if "src" in link:
+			if args["find"] in link["src"]:
+				infoList.append(link["src"])
+
+	if not infoList:
+		urls = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', str(response))
+		for link in urls:
+			if args["find"] in link:
+				infoList.append(link)
+		#last ditch effort to capture all matches.
+
+	#remove all args in future
+	if args["separator"]:
+		urlList = infoList
+		infoList = []
+		for link in urlList:
+			if args["separator"] in link:
+				head, sep, tail = link.partition(args["separator"])
+				infoList.append(tail)
+
+	if not infoList:
+		#if it's empty
+		print("It's empty.")
+		print(response)
+
+	return infoList
+
+
+def returnInfo2(url):
+	#This is legacy.
 	http = httplib2.Http()
 	status, response = http.request(url)
 
@@ -26,6 +93,11 @@ def returnInfo(url):
 			if args["separator"] in link:
 				head, sep, tail = link.partition(args["separator"])
 				infoList.append(tail)
+
+	if not infoList:
+		#if it's empty
+		print("It's empty.")
+		print(response)
 
 	return infoList
 
@@ -48,7 +120,7 @@ def parseText(inputText, outputText):
 	outputText = open(outputText,"w+") if outputText else open(
 		os.path.join(os.path.dirname(inputDir),"outputInfo.txt"),"w+")
 	for inputurl in inputText:
-		for outputurl in returnInfo(inputurl):
+		for outputurl in returnImg(inputurl):#hack for now, will change later
 			outputText.write(outputurl + "\n")
 		outputText.write("\n\n")
 
@@ -58,7 +130,7 @@ def main(args):
 	if not validators.url(inputText):
 		parseText(inputText, args["output"])
 	else:
-		for outputurl in returnInfo(inputText):
+		for outputurl in returnInfo2(inputText):
 				print(outputurl)
 
 if __name__ == '__main__':
