@@ -50,7 +50,7 @@ def returnImg(url):
 				infoList.append(link["src"])
 
 	if not infoList:
-		urls = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', str(response))
+		urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(response))
 		for link in urls:
 			if args["find"] in link:
 				infoList.append(link)
